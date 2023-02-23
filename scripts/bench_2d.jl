@@ -17,6 +17,16 @@ end
     return
 end
 
+@tiny function diff_step!(A, B, C, s)
+    ix, iy = @indices()
+    if (ix>1 && ix<size(A,1) && iy>1 && iy<size(A,2))
+        @inbounds A[ix, iy] = B[ix, iy] + s / 50.0 * (C[ix, iy] * (
+                              -((-(B[ix+1, iy] - B[ix, iy])) - (-(B[ix, iy] - B[ix-1, iy])))
+                              -((-(B[ix, iy+1] - B[ix, iy])) - (-(B[ix, iy] - B[ix, iy-1])))))
+    end
+    return
+end
+
 function compute!(fun!, A, B, C, s, ranges, nrep)
     for ir in 1:nrep
         inner_event  =  fun!(A, B, C, s; ndrange=ranges[1])
@@ -52,7 +62,8 @@ function main(; device)
               (nx-b_w[1]-1:nx     , 1:ny               ),
               (b_w[1]+1:nx-b_w[1] , 1:b_w[2]           ),
               (b_w[1]+1:nx-b_w[1] , ny-b_w[2]-1:ny     ))
-    # Generate kernel
+
+    # Memcopy triad
     mcpy_triad! = Kernel(memcopy_triad!, device)
     TinyKernels.device_synchronize(device)
     # warmup
@@ -62,12 +73,29 @@ function main(; device)
     # split
     t_nrep = @belapsed compute!($mcpy_triad!, $A, $B, $C, $s, $ranges, $nrep)
     t_eff = sizeof(eltype(A)) * 3 * nx * ny * 1e-9 / (t_nrep / nrep)
-    println(" Split    - time (s) = $(round(t_nrep/nrep, digits=5)), T_eff (GB/s) = $(round(t_eff, digits=2))")
+    println(" memcpy split    - time (s) = $(round(t_nrep/nrep, digits=5)), T_eff (GB/s) = $(round(t_eff, digits=2))")
     TinyKernels.device_synchronize(device)
     # no split
     t_nrep = @belapsed compute!($mcpy_triad!, $A, $B, $C, $s, $nrep)
     t_eff = sizeof(eltype(A)) * 3 * nx * ny * 1e-9 / (t_nrep / nrep)
-    println(" No split - time (s) = $(round(t_nrep/nrep, digits=5)), T_eff (GB/s) = $(round(t_eff, digits=2))")
+    println(" memcpy no split - time (s) = $(round(t_nrep/nrep, digits=5)), T_eff (GB/s) = $(round(t_eff, digits=2))")
+
+    # Diffusion step
+    d_step! = Kernel(diff_step!, device)
+    TinyKernels.device_synchronize(device)
+    # warmup
+    compute!(d_step!, A, B, C, s, ranges, 2)
+    compute!(d_step!, A, B, C, s, 2)
+    TinyKernels.device_synchronize(device)
+    # split
+    t_nrep = @belapsed compute!($d_step!, $A, $B, $C, $s, $ranges, $nrep)
+    t_eff = sizeof(eltype(A)) * 3 * nx * ny * 1e-9 / (t_nrep / nrep)
+    println(" diff   split    - time (s) = $(round(t_nrep/nrep, digits=5)), T_eff (GB/s) = $(round(t_eff, digits=2))")
+    TinyKernels.device_synchronize(device)
+    # no split
+    t_nrep = @belapsed compute!($d_step!, $A, $B, $C, $s, $nrep)
+    t_eff = sizeof(eltype(A)) * 3 * nx * ny * 1e-9 / (t_nrep / nrep)
+    println(" diff   no split - time (s) = $(round(t_nrep/nrep, digits=5)), T_eff (GB/s) = $(round(t_eff, digits=2))")
     return
 end
 
