@@ -58,10 +58,12 @@ function main(; device)
     # warmup
     compute!(mcpy_triad!, A, B, C, s, ranges, 2)
     compute!(mcpy_triad!, A, B, C, s, 2)
+    TinyKernels.device_synchronize(device)
     # split
     t_nrep = @belapsed compute!($mcpy_triad!, $A, $B, $C, $s, $ranges, $nrep)
     t_eff = sizeof(eltype(A)) * 3 * nx * ny * 1e-9 / (t_nrep / nrep)
     println(" Split    - time (s) = $(round(t_nrep/nrep, digits=5)), T_eff (GB/s) = $(round(t_eff, digits=2))")
+    TinyKernels.device_synchronize(device)
     # no split
     t_nrep = @belapsed compute!($mcpy_triad!, $A, $B, $C, $s, $nrep)
     t_eff = sizeof(eltype(A)) * 3 * nx * ny * 1e-9 / (t_nrep / nrep)
