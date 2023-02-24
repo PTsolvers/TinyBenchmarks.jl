@@ -46,7 +46,6 @@ function compute!(fun!, A, B, C, s, nrep)
 end
 
 function main(; device)
-    # AMDGPU.default_device_id!(3)
     nx, ny = 4096*4, 4096*4
     A = device_array(Float64, device, nx, ny)
     B = device_array(Float64, device, nx, ny)

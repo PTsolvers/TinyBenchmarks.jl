@@ -60,7 +60,6 @@ function compute!(fun1!, fun2!, A, qx, qy, qz, C, dt, _dx, _dy, _dz, nt, ranges)
 end
 
 function main(; device)
-    # AMDGPU.default_device_id!(3)
     # physics
     lx = ly = lz = 10.0
     c0 = 2.0

@@ -12,6 +12,10 @@ module load rocm
 ## Instead use preferences:
 # AMDGPU.enable_artifacts!(false)
 # AMDGPU.Runtime.set_max_scratch!(128)
+
+# add https://github.com/luraess/ImplicitGlobalGrid.jl#lr/amdgpu-0.4.x-support
+# MPIPreferences.use_system_binary(; library_names=["libmpi_cray"], mpiexec="srun")
+
 ## And set following to circumvent precompile conflict between login and compute node
 # JULIA_PKG_PRECOMPILE_AUTO=0
 
