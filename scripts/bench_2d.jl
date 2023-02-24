@@ -46,7 +46,7 @@ function compute!(fun!, A, B, C, s, nrep)
 end
 
 function main(; device)
-    AMDGPU.default_device_id!(3)
+    # AMDGPU.default_device_id!(3)
     nx, ny = 4096*4, 4096*4
     A = device_array(Float64, device, nx, ny)
     B = device_array(Float64, device, nx, ny)
@@ -59,11 +59,11 @@ function main(; device)
     # compute ranges
     ranges = ((b_w[1]+1:nx-b_w[1] , b_w[2]+1:ny-b_w[2] ),
               (1:b_w[1]           , 1:ny               ),
-              (nx-b_w[1]-1:nx     , 1:ny               ),
+              (nx-b_w[1]+1:nx     , 1:ny               ),
               (b_w[1]+1:nx-b_w[1] , 1:b_w[2]           ),
-              (b_w[1]+1:nx-b_w[1] , ny-b_w[2]-1:ny     ))
+              (b_w[1]+1:nx-b_w[1] , ny-b_w[2]+1:ny     ))
 
-    # Memcopy triad
+    println("Running Memcopy triad 2D")
     mcpy_triad! = Kernel(memcopy_triad!, device)
     TinyKernels.device_synchronize(device)
     # warmup
@@ -73,14 +73,14 @@ function main(; device)
     # split
     t_nrep = @belapsed compute!($mcpy_triad!, $A, $B, $C, $s, $ranges, $nrep)
     t_eff = sizeof(eltype(A)) * 3 * nx * ny * 1e-9 / (t_nrep / nrep)
-    println(" memcpy split    - time (s) = $(round(t_nrep/nrep, digits=5)), T_eff (GB/s) = $(round(t_eff, digits=2))")
+    println("  split    - time (s) = $(round(t_nrep/nrep, digits=5)), T_eff (GB/s) = $(round(t_eff, digits=2))")
     TinyKernels.device_synchronize(device)
     # no split
     t_nrep = @belapsed compute!($mcpy_triad!, $A, $B, $C, $s, $nrep)
     t_eff = sizeof(eltype(A)) * 3 * nx * ny * 1e-9 / (t_nrep / nrep)
-    println(" memcpy no split - time (s) = $(round(t_nrep/nrep, digits=5)), T_eff (GB/s) = $(round(t_eff, digits=2))")
+    println("  no split - time (s) = $(round(t_nrep/nrep, digits=5)), T_eff (GB/s) = $(round(t_eff, digits=2))")
 
-    # Diffusion step
+    println("Running Diffusion step 2D")
     d_step! = Kernel(diff_step!, device)
     TinyKernels.device_synchronize(device)
     # warmup
@@ -90,12 +90,12 @@ function main(; device)
     # split
     t_nrep = @belapsed compute!($d_step!, $A, $B, $C, $s, $ranges, $nrep)
     t_eff = sizeof(eltype(A)) * 3 * nx * ny * 1e-9 / (t_nrep / nrep)
-    println(" diff   split    - time (s) = $(round(t_nrep/nrep, digits=5)), T_eff (GB/s) = $(round(t_eff, digits=2))")
+    println("  split    - time (s) = $(round(t_nrep/nrep, digits=5)), T_eff (GB/s) = $(round(t_eff, digits=2))")
     TinyKernels.device_synchronize(device)
     # no split
     t_nrep = @belapsed compute!($d_step!, $A, $B, $C, $s, $nrep)
     t_eff = sizeof(eltype(A)) * 3 * nx * ny * 1e-9 / (t_nrep / nrep)
-    println(" diff   no split - time (s) = $(round(t_nrep/nrep, digits=5)), T_eff (GB/s) = $(round(t_eff, digits=2))")
+    println("  no split - time (s) = $(round(t_nrep/nrep, digits=5)), T_eff (GB/s) = $(round(t_eff, digits=2))")
     return
 end
 
