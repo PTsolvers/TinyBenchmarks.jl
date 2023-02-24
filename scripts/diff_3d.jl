@@ -66,7 +66,7 @@ function main(; device)
     # physics
     lx = ly = lz = 10.0
     c0 = 2.0
-    nt = 100
+    nt = 2
     # numerics
     nx = ny = nz = 1024
     dx, dy, dz = lx / nx, ly / ny, lz / nz
