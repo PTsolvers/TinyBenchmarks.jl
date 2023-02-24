@@ -1,7 +1,5 @@
 using TinyKernels
-using TinyKernels.KernelAD
 using BenchmarkTools
-using Enzyme
 
 using CUDA
 @static if CUDA.functional()
