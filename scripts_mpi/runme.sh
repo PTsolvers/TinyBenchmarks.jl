@@ -8,6 +8,6 @@ source ../setenv_lumi.sh
 
 # julia --project -e 'using AMDGPU; AMDGPU.versioninfo()'
 
-julia --project -O3 diff_2d.jl
+julia --project -O3 diff_2d_mpi.jl
 
-# ./myrocprof --hsa-trace -d ./prof_out${SLURM_PROCID} -o ./prof_out${SLURM_PROCID}/results${SLURM_PROCID}.csv julia --project -O3 --check-bounds=no FastIce3D_visc_amd_opt_mpi_perf.jl
+# ./myrocprof --hsa-trace -d ./prof_out${SLURM_PROCID} -o ./prof_out${SLURM_PROCID}/results${SLURM_PROCID}.csv julia --project -O3 diff_2d_mpi.jl

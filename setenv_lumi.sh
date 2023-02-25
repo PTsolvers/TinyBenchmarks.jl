@@ -1,6 +1,7 @@
 #!/bin/bash
 
 module load CrayEnv
+# module load PrgEnv-cray
 module load craype-accel-amd-gfx90a # MI250x
 module load rocm
 
