@@ -65,7 +65,7 @@ function main(; device)
     c0 = 2.0
     nt = 2
     # numerics
-    nx = ny = nz = 1024
+    nx = ny = nz = 512#1024
     dx, dy, dz = lx / nx, ly / ny, lz / nz
     dt = min(dx, dy, dz)^2 / c0 / 6.1
     b_w = (32, 16, 2)

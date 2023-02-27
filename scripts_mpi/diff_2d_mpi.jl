@@ -32,7 +32,7 @@ end
 end
 
 function compute!(fun1!, fun2!, A, qx, qy, C, dt, _dx, _dy, nt, comm_cart)
-    t_toc_max = Float64[1,2,3]
+    t_toc_max = Float64[]
     for it in 1:nt
         (it > nt - 10) && (MPI.Barrier(comm_cart); t_tic = time_ns())
         ev1 = fun1!(qx, qy, A, C, _dx, _dy; ndrange=size(A))
@@ -49,7 +49,7 @@ function compute!(fun1!, fun2!, A, qx, qy, C, dt, _dx, _dy, nt, comm_cart)
 end
 
 function compute!(fun1!, fun2!, A, qx, qy, C, dt, _dx, _dy, nt, ranges, comm_cart)
-    t_toc_max = Float64[1,2,3]
+    t_toc_max = Float64[]
     for it in 1:nt
         (it > nt - 10) && (MPI.Barrier(comm_cart); t_tic = time_ns())
         ev1 = fun1!(qx, qy, A, C, _dx, _dy; ndrange=size(A))
@@ -110,7 +110,7 @@ function main(; device)
     t_eff = sizeof(eltype(A)) * nIO * length(A) * 1e-9 / minimum(t_nt)
     (me == 0) && println("  no split - time (s) = $(round(minimum(t_nt), digits=5)), T_eff (GB/s) = $(round(t_eff, digits=2))")
     TinyKernels.device_synchronize(device)
-    # finalize_global_grid()
+    finalize_global_grid()
     return
 end
 
