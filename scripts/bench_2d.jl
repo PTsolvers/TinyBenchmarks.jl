@@ -63,7 +63,7 @@ function main(; device)
               (b_w[1]+1:nx-b_w[1] , ny-b_w[2]+1:ny     ))
 
     println("testing Memcopy triad 2D")
-    kernel_memcopy_triad! = Kernel(memcopy_triad!, device)
+    kernel_memcopy_triad! = memcopy_triad!(device)
     TinyKernels.device_synchronize(device)
     # warmup
     compute!(kernel_memcopy_triad!, A, B, C, s, ranges, 2)
@@ -80,7 +80,7 @@ function main(; device)
     println("  no split - time (s) = $(round(t_nrep/nrep, digits=5)), T_eff (GB/s) = $(round(t_eff, digits=2))")
 
     println("testing Diffusion step 2D")
-    kernel_diff_step! = Kernel(diff_step!, device)
+    kernel_diff_step! = diff_step!(device)
     TinyKernels.device_synchronize(device)
     # warmup
     compute!(kernel_diff_step!, A, B, C, s, ranges, 2)
@@ -100,10 +100,10 @@ end
 
 @static if CUDA.functional()
     println("running on CUDA device...")
-    main(;device=CUDADevice())
+    main(; device=CUDADevice())
 end
 
 @static if AMDGPU.functional()
     println("running on AMD device...")
-    main(;device=ROCBackend.ROCDevice())
+    main(; device=ROCBackend.ROCDevice())
 end

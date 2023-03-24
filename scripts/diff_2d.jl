@@ -79,8 +79,8 @@ function main(; device)
               (b_w[1]+1:nx-b_w[1] , ny-b_w[2]+1:ny    ))
     # action
     println("testing Diffusion step 2D")
-    kernel_comp_flux! = Kernel(comp_flux!, device)
-    kernel_comp_mbal! = Kernel(comp_mbal!, device)
+    kernel_comp_flux! = comp_flux!(device)
+    kernel_comp_mbal! = comp_mbal!(device)
     TinyKernels.device_synchronize(device)
     # warmup
     compute!(kernel_comp_flux!, kernel_comp_mbal!, A, qx, qy, C, dt, _dx, _dy, nt, ranges)
