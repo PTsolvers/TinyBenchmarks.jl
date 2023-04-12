@@ -2,6 +2,13 @@ using TinyKernels
 using ImplicitGlobalGrid
 import MPI
 
+include("setup_benchs.jl")
+
+# Select based upon your local device (:CPU, :CUDA, :AMDGPU, :Metal)
+backend = :CPU
+
+@setup_benchs()
+
 @tiny function kernel_comp_flux!(qx, qy, A, C, _dx, _dy)
     ix, iy = @indices()
     if (ix <= size(qx, 1) && iy <= size(qx, 2) - 2)
